@@ -23,7 +23,8 @@ class FormController extends Controller
                 'id' => $form->id,
                 'name' => $form->name,
                 'description' => $form->description,
-                'fields' => $form->fields
+                'fields' => $form->fields,
+                'profiles' => $form->profiles
             ],
         ]);
     }

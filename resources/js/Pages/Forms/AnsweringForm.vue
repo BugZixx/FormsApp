@@ -19,6 +19,7 @@ const count = ref(1);
 const currentPick = ref("");
 const user = usePage().props.auth.user;
 var json = {};
+var colorProfile = {};
 var ans = {};
 
 var keys = Object.keys(questionsData);
@@ -43,23 +44,58 @@ const changePick = (qst) => {
 const counter = (val, qst) => {
     var pickedKeys = Object.keys(json);
 
-    if (pickedKeys.length <= count.value) json[qst] = "";
+    if (pickedKeys.length < count.value) json[qst] = "";
 
     count.value += val;
 
     currentPick.value = json[pickedKeys[count.value - 1]];
 };
 
+// loops through all the answers
+// determines the profile
+// creates the object Answer with user_id, data (answers) and profile
 // submits the form
 const submit = () => {
-    ans = { user_id: user.id, data: json };
+    // checks all answers for yes or no and stores in the color profiles
+    for (var i = 0; i < Object.keys(json).length; i++) {
+        var str = Object.values(json)[i];
 
-    console.log(ans);
+        if (!str.startsWith("no-")) {
+            // if answer is yes
+            var prf = str.split("-")[0];
 
-    router.post('/answers/' + ans, { 
+            if (colorProfile[prf] != null) colorProfile[prf] += 1;
+            else colorProfile[prf] = 1;
+        } else {
+            // if answer is no
+            var prf = str.split("-")[1];
+
+            if (!colorProfile[prf]) colorProfile[prf] = 0;
+        }
+    }
+
+    // checks each color profile for the highest values
+    // then determines the highest one as the profile
+    var arrValues = Object.values(colorProfile);
+    var arrKeys = Object.keys(colorProfile);
+    var max = Math.max(...arrValues);
+    console.log(colorProfile);
+    var profiles = JSON.parse(props.form.profiles);
+    var profile = {};
+    console.log(arrKeys + " " + arrValues);
+    for (var i = 0; i < arrValues.length; i++)
+        if (max == arrValues[i]) profile[arrKeys[i]] = profiles[arrKeys[i]];
+
+    ans = { user_id: user.id, title: props.form.name, data: json, profile: profile };
+
+    console.log(profile);
+
+    router.post("/answers/" + ans, {
         user_id: user.id,
-        data: json
-     });
+        title: props.form.name,
+        data: json,
+        profile: JSON.stringify(profile)
+    });
 };
 </script>
 

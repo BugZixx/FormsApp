@@ -14,7 +14,7 @@ class AnswerController extends Controller
     {
         $user = Auth::user();
         return Inertia::render('Answers/Index', [
-            'answers' => Answer::where('user_id', $user->id)->get('data'),
+            'answers' => Answer::where('user_id', $user->id)->get(['id', 'title', 'profile', 'created_at']),
         ]);
     }
 
@@ -23,7 +23,9 @@ class AnswerController extends Controller
         $answer = Answer::create(
             $request->validate([
                 'user_id' => 'required',
+                'title' => 'required',
                 'data' => 'required',
+                'profile' => 'required'
             ])
         );
 
