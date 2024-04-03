@@ -10,7 +10,12 @@ const props = defineProps({
     },
 });
 
-var chartData = {};
+const defaultBackgroundColors = {
+    Azul: "#36a2eb",
+    Verde: "#4bc098",
+    Amarelo: "#ffcd56",
+    Vermelho: "#ff6384",
+};
 
 const getDate = (created_at) => {
     var date = new Date(created_at);
@@ -51,31 +56,43 @@ const getText = (profile) => {
 const getChartData = (answer) => {
     var answers = Object.values(answer.data);
     var unique = new Set();
+    var uniqueColors = new Set();
     var counter = [];
     var percentages = [];
+    var iterator;
 
     for (var i = 0; i < answers.length; i++) {
         if (!answers[i].startsWith("no-")) {
             var str = answers[i].split("-")[0];
-            unique.add(str);
+            unique.add(str.charAt(0).toUpperCase() + str.slice(1));
             if (counter[str]) counter[str]++;
             else counter[str] = 1;
         } else {
             var str = answers[i].split("-")[1];
-            unique.add(str);
+            unique.add(str.charAt(0).toUpperCase() + str.slice(1));
             if (!counter[str]) counter[str] = 0;
         }
     }
 
-    for (var i = 0; i < unique.size; i++)
+    iterator = unique.values();
+    for (var i = 0; i < unique.size; i++) {
         percentages.push(
             (Object.values(counter)[i] / (answers.length / unique.size)) * 100
         );
-    console.log(percentages);
+
+        uniqueColors.add(defaultBackgroundColors[iterator.next().value]);
+    }
+
+    console.log(uniqueColors);
 
     return {
         labels: Array.from(unique),
-        datasets: [{ label: "A tua distribuição", data: percentages }],
+        datasets: [
+            {
+                data: percentages,
+                backgroundColor: Array.from(uniqueColors),
+            },
+        ],
     };
 };
 
@@ -86,14 +103,33 @@ const getOptions = () => {
         scales: {
             y: {
                 type: "linear",
-                grace: "15%",
+                max: 100,
+                grid: {
+                    color: "rgba(150, 150, 150, 0.5)",
+                },
+                ticks: {
+                    color: "#fff",
+                },
+            },
+            x: {
+                grid: {
+                    color: "rgba(150, 150, 150, 0.5)",
+                },
+                ticks: {
+                    color: "#fff",
+                },
             },
         },
         plugins: {
+            title: {
+                display: true,
+                text: "Percentagem que te enquadras com cada perfil",
+                color: "#fff",
+                font: {
+                    size: 14,
+                },
+            },
             legend: false,
-            colors: {
-                enabled: true
-            }
         },
     };
 };
@@ -125,13 +161,14 @@ const getOptions = () => {
                         </div>
                     </div>
                     <div class="flex collumns-2 my-3">
-                        <div class="w-full">
+                        <div class="w-full m-2">
                             <BarChart
+                                aria-label="Percentagem que te enquadras com cada perfil"
                                 :chartData="getChartData(answer)"
                                 :chartOptions="getOptions()"
                             />
                         </div>
-                        <div class="w-full">
+                        <div class="w-full m-2">
                             <p>{{ getText(answer.profile) }}</p>
                             <p
                                 v-for="p in Object.values(

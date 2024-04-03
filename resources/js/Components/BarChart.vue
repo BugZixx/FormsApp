@@ -14,16 +14,15 @@ import {
     CategoryScale,
     LinearScale,
 } from "chart.js";
-import { ref } from "vue";
 
 ChartJS.register(
+    Colors,
     Title,
     Tooltip,
     Legend,
     BarElement,
     CategoryScale,
-    LinearScale,
-    Colors
+    LinearScale    
 );
 
 export default {
